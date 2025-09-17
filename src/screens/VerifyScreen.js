@@ -52,9 +52,9 @@ const VerifyScreen = ({ navigation, route }) => {
     setLoading(true);
 
     try {
-      // Simulate API call
+            // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
-      navigation.navigate('ChatBot');
+      navigation.navigate('SuccessVerify');
     } catch (error) {
       Alert.alert('Error', 'Invalid verification code. Please try again.');
     } finally {

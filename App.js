@@ -9,6 +9,7 @@ import LoginScreen from './src/screens/LoginScreen';
 import VerifyScreen from './src/screens/VerifyScreen';
 import ChatBotScreen from './src/screens/ChatBotScreen';
 import { colors } from './src/styles/globalStyles';
+import SuccessVerify from './src/screens/succesVerify';
 
 const Stack = createStackNavigator();
 
@@ -27,6 +28,7 @@ export default function App() {
         <Stack.Screen name="GetStarted" component={GetStartedScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Verify" component={VerifyScreen} />
+        <Stack.Screen name="SuccessVerify" component={SuccessVerify} />
         <Stack.Screen name="ChatBot" component={ChatBotScreen} />
       </Stack.Navigator>
     </NavigationContainer>
