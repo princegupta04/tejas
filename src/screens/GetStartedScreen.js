@@ -105,6 +105,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   featuresContainer: {
+    marginTop: -20,  
     marginBottom: 40,
   },
   featureCard: {
@@ -139,7 +140,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   buttonContainer: {
-    marginTop: 20,
+    marginTop: -45,
   },
   primaryButton: {
     alignItems: 'center',
@@ -148,7 +149,8 @@ const styles = StyleSheet.create({
   secondaryButton: {
     alignItems: 'center',
     paddingVertical: 15,
-  },
+    marginTop:-25,
+    },
   secondaryButtonText: {
     color: colors.primary,
   },
