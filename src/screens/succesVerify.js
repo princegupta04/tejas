@@ -8,7 +8,7 @@ const SuccessVerify = ({ navigation }) => {
         const timer = setTimeout(() => {
             navigation.reset({
                 index: 0,
-                routes: [{ name: 'ChatBot' }],
+                routes: [{ name: 'GetStarted' }],
             });
         }, 3000);
         

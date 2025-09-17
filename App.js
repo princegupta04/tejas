@@ -25,10 +25,10 @@ export default function App() {
         }}
       >
         <Stack.Screen name="Welcome" component={WelcomeScreen} />
-        <Stack.Screen name="GetStarted" component={GetStartedScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Verify" component={VerifyScreen} />
         <Stack.Screen name="SuccessVerify" component={SuccessVerify} />
+        <Stack.Screen name="GetStarted" component={GetStartedScreen} />
         <Stack.Screen name="ChatBot" component={ChatBotScreen} />
       </Stack.Navigator>
     </NavigationContainer>
