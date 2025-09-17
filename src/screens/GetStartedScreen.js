@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { globalStyles, colors } from '../styles/globalStyles';
+import { globalStyles, colors  , headingText} from '../styles/globalStyles';
 
 const GetStartedScreen = ({ navigation }) => {
   const handleSignUp = () => {
@@ -38,8 +38,11 @@ const GetStartedScreen = ({ navigation }) => {
     <View style={[globalStyles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.header}>
-          <Text style={[globalStyles.title, styles.title]}>
-            Welcome to AstroChat
+          <Text style={[styles.headingText]}>
+            Welcome to
+          </Text>
+          <Text style={[styles.headingText]}>
+            Tejas
           </Text>
           <Text style={[globalStyles.body, styles.subtitle]}>
             Unlock the mysteries of the universe
@@ -148,6 +151,14 @@ const styles = StyleSheet.create({
   },
   secondaryButtonText: {
     color: colors.primary,
+  },
+   headingText: {
+    fontFamily: 'Poppins',
+    fontWeight: '700',
+    fontSize: 35,
+    lineHeight: 40,
+    textAlign: 'center',
+    color: '#4B1E01', // text color only
   },
 });
 

@@ -1,13 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { 
+  View, 
+  Text, 
+  TextInput, 
+  TouchableOpacity, 
+  StyleSheet, 
+  Alert,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform
+} from 'react-native';
 import { globalStyles, colors } from '../styles/globalStyles';
 
 const VerifyScreen = ({ navigation, route }) => {
-  const [code, setCode] = useState(['', '', '', '', '', '']);
+  const [code, setCode] = useState(['', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [resendTimer, setResendTimer] = useState(30);
   const [canResend, setCanResend] = useState(false);
-  
+
   const phone = route.params?.phone || '';
 
   useEffect(() => {
@@ -29,23 +39,18 @@ const VerifyScreen = ({ navigation, route }) => {
     const newCode = [...code];
     newCode[index] = value;
     setCode(newCode);
-    
-    // Auto-focus next input
-    if (value && index < 5) {
-      // You can implement ref-based focus if needed
-    }
   };
 
   const handleVerify = async () => {
     const verificationCode = code.join('');
-    
-    if (verificationCode.length !== 6) {
-      Alert.alert('Error', 'Please enter the complete 6-digit code');
+
+    if (verificationCode.length !== 4) {
+      Alert.alert('Error', 'Please enter the complete 4-digit code');
       return;
     }
 
     setLoading(true);
-    
+
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
@@ -59,15 +64,13 @@ const VerifyScreen = ({ navigation, route }) => {
 
   const handleResend = async () => {
     if (!canResend) return;
-    
+
     setCanResend(false);
     setResendTimer(30);
-    
-    // Simulate resend API call
+
     await new Promise(resolve => setTimeout(resolve, 1000));
     Alert.alert('Success', 'A new verification code has been sent to your mobile number.');
-    
-    // Restart timer
+
     const timer = setInterval(() => {
       setResendTimer((prev) => {
         if (prev <= 1) {
@@ -80,27 +83,28 @@ const VerifyScreen = ({ navigation, route }) => {
     }, 1000);
   };
 
-  const maskedPhone = phone.replace(/(\d{2})(\d{6})(\d{2})/, '$1******$3');
-
-  return (
-    <View style={globalStyles.container}>
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.icon}>📱</Text>
-          <Text style={[globalStyles.title, styles.title]}>
-            Verify Your Mobile
-          </Text>
-          <Text style={[globalStyles.body, styles.subtitle]}>
-            We've sent a 6-digit verification code to{'\n'}
-            <Text style={styles.phone}>{maskedPhone}</Text>
-          </Text>
+ return (
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.container}
+    >
+      <ScrollView 
+        contentContainerStyle={styles.scrollContainer}
+        bounces={false}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Yellow top section */}
+        <View style={styles.topSection}>
+          <Text style={{ fontSize: 40 }}></Text>
         </View>
 
-        <View style={styles.codeContainer}>
-          <Text style={[globalStyles.body, styles.codeLabel]}>
-            Enter verification code
+        {/* White floating card */}
+        <View style={styles.card}>
+          <Text style={styles.title}>Verify Your Phone Number</Text>
+          <Text style={styles.subtitle}>
+            Enter the 4-digit code sent to your mobile
           </Text>
-          
+
           <View style={styles.codeInputContainer}>
             {code.map((digit, index) => (
               <TextInput
@@ -114,113 +118,139 @@ const VerifyScreen = ({ navigation, route }) => {
               />
             ))}
           </View>
-        </View>
 
-        <TouchableOpacity 
-          style={[globalStyles.button, styles.verifyButton, loading && styles.disabledButton]} 
-          onPress={handleVerify}
-          disabled={loading}
-        >
-          <Text style={globalStyles.buttonText}>
-            {loading ? 'Verifying...' : 'Verify Code'}
-          </Text>
-        </TouchableOpacity>
-
-        <View style={styles.resendContainer}>
-          <Text style={[globalStyles.body, styles.resendText]}>
-            Didn't receive the code?
-          </Text>
-          
-          {canResend ? (
-            <TouchableOpacity onPress={handleResend}>
-              <Text style={[globalStyles.body, styles.resendLink]}>
-                Resend Code
-              </Text>
-            </TouchableOpacity>
-          ) : (
-            <Text style={[globalStyles.body, styles.timerText]}>
-              Resend in {resendTimer}s
+          {/* Resend link */}
+          <TouchableOpacity onPress={handleResend} disabled={!canResend}>
+            <Text style={styles.resendLink}>
+              {canResend ? 'RESEND NEW CODE' : `Resend in ${resendTimer}s`}
             </Text>
-          )}
+          </TouchableOpacity>
+
+          {/* Verify button */}
+          <TouchableOpacity
+            style={[styles.button, loading && styles.disabledButton]}
+            onPress={handleVerify}
+            disabled={loading}
+          >
+            <Text style={styles.buttonText}>
+              {loading ? 'Verifying...' : 'Verify'}
+            </Text>
+          </TouchableOpacity>
         </View>
-      </View>
-    </View>
+        
+        {/* Footer text */}
+        <Text style={styles.footer}>
+          By providing my phone number, I hereby agree and accept the{' '}
+          <Text style={styles.link}>Terms of Service</Text> and{' '}
+          <Text style={styles.link}>Privacy Policy</Text> in use of our app
+        </Text>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 30,
-    paddingTop: 80,
-    backgroundColor: colors.background,
+    backgroundColor: '#FDF7EF', // Creamy background
   },
-  header: {
+  scrollContainer: {
+    flexGrow: 1,
     alignItems: 'center',
-    marginBottom: 50,
   },
-  icon: {
-    fontSize: 60,
-    marginBottom: 20,
+  topSection: {
+    backgroundColor: '#FFD580', // Yellow header
+    width: '100%',
+    height: 420,
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 0, // background
+  },
+  card: {
+    backgroundColor: '#fff',
+    width: '85%',
+    padding: 25,
+    borderRadius: 20,
+    marginTop: -100, // pull over yellow section
+    zIndex: 1, // floating above yellow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 6, // Android shadow
   },
   title: {
+    fontSize: 20,
+    fontWeight: '700',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 10,
+    color: '#000',
   },
   subtitle: {
+    fontSize: 14,
     textAlign: 'center',
-    opacity: 0.7,
-    lineHeight: 22,
-  },
-  phone: {
-    fontWeight: '600',
-    color: '#4D1E00',
-  },
-  codeContainer: {
-    marginBottom: 40,
-  },
-  codeLabel: {
-    textAlign: 'center',
-    marginBottom: 20,
-    fontWeight: '500',
+    color: '#666',
+    marginBottom: 25,
   },
   codeInputContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
+    marginBottom: 25,
   },
   codeInput: {
-    width: 45,
-    height: 55,
-    borderWidth: 2,
-    borderColor: colors.lightGray,
-    borderRadius: 10,
-    fontSize: 24,
+    width: 60,
+    height: 60,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#E6E6E6',
+    textAlign: 'center',
+    fontSize: 22,
     fontWeight: '600',
-    backgroundColor: colors.white,
-    color: colors.text,
+    backgroundColor: '#FBF6EF',
+    color: '#000',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
   },
-  verifyButton: {
-    alignItems: 'center',
-    marginBottom: 30,
+  resendLink: {
+    textAlign: 'center',
+    color: '#4D1E00',
+    fontWeight: '600',
+    marginBottom: 20,
+    fontSize: 14,
+  },
+  button: {
     backgroundColor: '#4D1E00',
+    paddingVertical: 15,
     borderRadius: 25,
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   disabledButton: {
     opacity: 0.6,
   },
-  resendContainer: {
-    alignItems: 'center',
+  footer: {
+    textAlign: 'center',
+    fontSize: 12,
+    color: '#777',
+    marginTop: 20,
+    lineHeight: 18,
+    paddingHorizontal: 40,
+    position: 'absolute',
+    bottom: 30,
   },
-  resendText: {
-    marginBottom: 5,
-  },
-  resendLink: {
+  link: {
     color: '#4D1E00',
     fontWeight: '600',
-  },
-  timerText: {
-    color: colors.gray,
   },
 });
 
