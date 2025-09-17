@@ -3,10 +3,13 @@ import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { globalStyles, colors } from '../styles/globalStyles';
 
-const succesVerify = ({ navigation }) => {
+const SuccessVerify = ({ navigation }) => {
     useEffect(() => {
         const timer = setTimeout(() => {
-            navigation.navigate('ChatBot');
+            navigation.reset({
+                index: 0,
+                routes: [{ name: 'ChatBot' }],
+            });
         }, 3000);
         
         return () => clearTimeout(timer); // Cleanup the timer
@@ -24,8 +27,8 @@ const succesVerify = ({ navigation }) => {
           <Image source={require('../../assets/verify.png')} style={styles.logoImage} />
 
         <Text style={[styles.tagline, styles.welcomeText]}>
-           Mobile  Verification has Successfully done.
-          </Text>
+          Verification Successful! Redirecting to chat...
+        </Text>
         </View>
       </View>
     </LinearGradient>
@@ -97,4 +100,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default succesVerify;
+export default SuccessVerify;

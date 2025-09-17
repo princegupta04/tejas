@@ -2,10 +2,14 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { globalStyles, colors } from '../styles/globalStyles';
+import { useNavigation } from '@react-navigation/native';
+import LoginScreen from './LoginScreen';
 
-const WelcomeScreen = ({ navigation }) => {
+const WelcomeScreen = () => {
+  const navigation = useNavigation();
+
   const handleGetStarted = () => {
-    navigation.navigate('GetStarted');
+    navigation.navigate('Login');
   };
 
   return (

@@ -52,7 +52,7 @@ const VerifyScreen = ({ navigation, route }) => {
     setLoading(true);
 
     try {
-            // Simulate API call
+                  // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
       navigation.navigate('SuccessVerify');
     } catch (error) {

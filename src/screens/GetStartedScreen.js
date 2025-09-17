@@ -3,12 +3,8 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-nati
 import { globalStyles, colors  , headingText} from '../styles/globalStyles';
 
 const GetStartedScreen = ({ navigation }) => {
-  const handleSignUp = () => {
-    navigation.navigate('Login', { mode: 'signup' });
-  };
-
-  const handleLogin = () => {
-    navigation.navigate('Login', { mode: 'login' });
+  const handleClick = () => {
+    navigation.navigate('ChatBot');
   };
 
   const features = [
@@ -68,19 +64,11 @@ const GetStartedScreen = ({ navigation }) => {
         <View style={styles.buttonContainer}>
           <TouchableOpacity 
             style={[globalStyles.button, styles.primaryButton, { backgroundColor: '#4D1E00' }]}
-            onPress={handleSignUp}
+            onPress={handleClick}
           >
-            <Text style={globalStyles.buttonText}>Create Account</Text>
+            <Text style={globalStyles.buttonText}>Chat With Tejas</Text>
           </TouchableOpacity>
           
-          <TouchableOpacity 
-            style={[styles.secondaryButton]} 
-            onPress={handleLogin}
-          >
-            <Text style={[globalStyles.buttonText, styles.secondaryButtonText]}>
-              I already have an account
-            </Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>
