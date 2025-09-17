@@ -8,7 +8,7 @@ const VerifyScreen = ({ navigation, route }) => {
   const [resendTimer, setResendTimer] = useState(30);
   const [canResend, setCanResend] = useState(false);
   
-  const email = route.params?.email || '';
+  const phone = route.params?.phone || '';
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -32,8 +32,7 @@ const VerifyScreen = ({ navigation, route }) => {
     
     // Auto-focus next input
     if (value && index < 5) {
-      const nextInput = `input${index + 1}`;
-      // In a real implementation, you'd use refs to focus the next input
+      // You can implement ref-based focus if needed
     }
   };
 
@@ -50,8 +49,6 @@ const VerifyScreen = ({ navigation, route }) => {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // For demo purposes, accept any 6-digit code
       navigation.navigate('ChatBot');
     } catch (error) {
       Alert.alert('Error', 'Invalid verification code. Please try again.');
@@ -68,7 +65,7 @@ const VerifyScreen = ({ navigation, route }) => {
     
     // Simulate resend API call
     await new Promise(resolve => setTimeout(resolve, 1000));
-    Alert.alert('Code Sent', 'A new verification code has been sent to your email.');
+    Alert.alert('Success', 'A new verification code has been sent to your mobile number.');
     
     // Restart timer
     const timer = setInterval(() => {
@@ -83,19 +80,19 @@ const VerifyScreen = ({ navigation, route }) => {
     }, 1000);
   };
 
-  const maskedEmail = email.replace(/(.{2})(.*)(@.*)/, '$1***$3');
+  const maskedPhone = phone.replace(/(\d{2})(\d{6})(\d{2})/, '$1******$3');
 
   return (
     <View style={globalStyles.container}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.icon}>📧</Text>
+          <Text style={styles.icon}>📱</Text>
           <Text style={[globalStyles.title, styles.title]}>
-            Verify Your Email
+            Verify Your Mobile
           </Text>
           <Text style={[globalStyles.body, styles.subtitle]}>
             We've sent a 6-digit verification code to{'\n'}
-            <Text style={styles.email}>{maskedEmail}</Text>
+            <Text style={styles.phone}>{maskedPhone}</Text>
           </Text>
         </View>
 
@@ -125,7 +122,7 @@ const VerifyScreen = ({ navigation, route }) => {
           disabled={loading}
         >
           <Text style={globalStyles.buttonText}>
-            {loading ? 'Verifying...' : 'Verify Email'}
+            {loading ? 'Verifying...' : 'Verify Code'}
           </Text>
         </TouchableOpacity>
 
@@ -156,6 +153,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 30,
     paddingTop: 80,
+    backgroundColor: colors.background,
   },
   header: {
     alignItems: 'center',
@@ -174,9 +172,9 @@ const styles = StyleSheet.create({
     opacity: 0.7,
     lineHeight: 22,
   },
-  email: {
+  phone: {
     fontWeight: '600',
-    color: colors.primary,
+    color: '#4D1E00',
   },
   codeContainer: {
     marginBottom: 40,
@@ -205,6 +203,8 @@ const styles = StyleSheet.create({
   verifyButton: {
     alignItems: 'center',
     marginBottom: 30,
+    backgroundColor: '#4D1E00',
+    borderRadius: 25,
   },
   disabledButton: {
     opacity: 0.6,
@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   resendLink: {
-    color: colors.primary,
+    color: '#4D1E00',
     fontWeight: '600',
   },
   timerText: {
