@@ -1,8 +1,5 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from flask_pymongo import PyMongo
-from werkzeug.security import generate_password_hash, check_password_hash
-from bson import ObjectId
 import jwt
 import datetime
 import os
@@ -12,17 +9,13 @@ import time
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-here'
-app.config['MONGO_URI'] = os.getenv('MONGO_URI', 'mongodb://localhost:27017/astrochat')
 
-mongo = PyMongo(app)
 CORS(app)
 
-# Collections
-users = mongo.db.users
-chat_sessions = mongo.db.chat_sessions
-
-# In-memory OTP storage for development (use Redis/DB in production)
+# In-memory storage for development (use MongoDB/DB in production)
 otp_storage = {}
+users_storage = {}
+chat_sessions_storage = []
 
 def generate_verification_code():
     return ''.join(random.choices(string.digits, k=6))
@@ -116,24 +109,19 @@ def verify_otp():
         del otp_storage[mobile]
         
         # Find or create user
-        user = users.find_one({'mobile': mobile})
-        if not user:
+        user_id = f"user_{mobile}"
+        if user_id not in users_storage:
             # Create new user
-            user_data = {
+            users_storage[user_id] = {
+                'user_id': user_id,
                 'mobile': mobile,
                 'is_verified': True,
                 'profile_complete': False,
-                'created_at': datetime.datetime.utcnow()
+                'created_at': datetime.datetime.utcnow().isoformat()
             }
-            result = users.insert_one(user_data)
-            user_id = str(result.inserted_id)
         else:
             # Update existing user
-            users.update_one(
-                {'_id': user['_id']},
-                {'$set': {'is_verified': True}}
-            )
-            user_id = str(user['_id'])
+            users_storage[user_id]['is_verified'] = True
         
         # Generate JWT token
         token = jwt.encode({
@@ -146,7 +134,7 @@ def verify_otp():
             'message': 'OTP verified successfully',
             'token': token,
             'user_id': user_id,
-            'profile_complete': user.get('profile_complete', False) if user else False
+            'profile_complete': users_storage[user_id].get('profile_complete', False)
         }), 200
         
     except Exception as e:
@@ -184,142 +172,18 @@ def save_profile():
             return jsonify({'error': 'All profile fields are required'}), 400
         
         # Update user profile
-        users.update_one(
-            {'_id': ObjectId(user_id)},
-            {'$set': {
+        if user_id in users_storage:
+            users_storage[user_id].update({
                 'name': name,
                 'birth_date': birth_date,
                 'birth_time': birth_time,
                 'birth_place': birth_place,
                 'profile_complete': True,
-                'updated_at': datetime.datetime.utcnow()
-            }}
-        )
+                'updated_at': datetime.datetime.utcnow().isoformat()
+            })
         
         return jsonify({
             'message': 'Profile saved successfully'
-        }), 200
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/api/register', methods=['POST'])
-def register():
-    try:
-        data = request.get_json()
-        email = data.get('email')
-        password = data.get('password')
-        
-        if not email or not password:
-            return jsonify({'error': 'Email and password are required'}), 400
-        
-        # Check if user already exists
-        if users.find_one({'email': email}):
-            return jsonify({'error': 'User already exists'}), 400
-        
-        # Generate verification code
-        verification_code = generate_verification_code()
-        
-        # Hash password
-        password_hash = generate_password_hash(password)
-        
-        # Create user
-        user_data = {
-            'email': email,
-            'password_hash': password_hash,
-            'verification_code': verification_code,
-            'is_verified': False,
-            'created_at': datetime.datetime.utcnow()
-        }
-        
-        result = users.insert_one(user_data)
-        
-        # In production, send email with verification code
-        # For demo, return the code (remove in production)
-        return jsonify({
-            'message': 'User registered successfully',
-            'verification_code': verification_code,  # Remove in production
-            'user_id': str(result.inserted_id)
-        }), 201
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/api/login', methods=['POST'])
-def login():
-    try:
-        data = request.get_json()
-        email = data.get('email')
-        password = data.get('password')
-        
-        if not email or not password:
-            return jsonify({'error': 'Email and password are required'}), 400
-        
-        # Find user
-        user = users.find_one({'email': email})
-        if not user or not check_password_hash(user['password_hash'], password):
-            return jsonify({'error': 'Invalid credentials'}), 401
-        
-        if not user.get('is_verified', False):
-            # Generate new verification code
-            verification_code = generate_verification_code()
-            users.update_one(
-                {'_id': user['_id']},
-                {'$set': {'verification_code': verification_code}}
-            )
-            return jsonify({
-                'error': 'Email not verified',
-                'verification_code': verification_code  # Remove in production
-            }), 403
-        
-        # Generate JWT token
-        token = jwt.encode({
-            'user_id': str(user['_id']),
-            'email': email,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
-        }, app.config['SECRET_KEY'], algorithm='HS256')
-        
-        return jsonify({
-            'message': 'Login successful',
-            'token': token,
-            'user_id': str(user['_id'])
-        }), 200
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/api/verify', methods=['POST'])
-def verify_email():
-    try:
-        data = request.get_json()
-        email = data.get('email')
-        code = data.get('code')
-        
-        if not email or not code:
-            return jsonify({'error': 'Email and verification code are required'}), 400
-        
-        # Find user and verify code
-        user = users.find_one({'email': email, 'verification_code': code})
-        if not user:
-            return jsonify({'error': 'Invalid verification code'}), 400
-        
-        # Update user as verified
-        users.update_one(
-            {'_id': user['_id']},
-            {'$set': {'is_verified': True, 'verification_code': None}}
-        )
-        
-        # Generate JWT token
-        token = jwt.encode({
-            'user_id': str(user['_id']),
-            'email': email,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
-        }, app.config['SECRET_KEY'], algorithm='HS256')
-        
-        return jsonify({
-            'message': 'Email verified successfully',
-            'token': token,
-            'user_id': str(user['_id'])
         }), 200
         
     except Exception as e:
@@ -361,10 +225,10 @@ def chat():
             'user_id': user_id,
             'user_message': message,
             'ai_response': ai_response,
-            'timestamp': datetime.datetime.utcnow()
+            'timestamp': datetime.datetime.utcnow().isoformat()
         }
         
-        chat_sessions.insert_one(chat_data)
+        chat_sessions_storage.append(chat_data)
         
         return jsonify({
             'response': ai_response,
@@ -396,13 +260,10 @@ def chat_history():
         except jwt.InvalidTokenError:
             return jsonify({'error': 'Invalid token'}), 401
         
-        # Get chat history
-        history = list(chat_sessions.find(
-            {'user_id': user_id},
-            {'_id': 0}
-        ).sort('timestamp', 1))
+        # Get chat history for user
+        user_history = [session for session in chat_sessions_storage if session['user_id'] == user_id]
         
-        return jsonify({'history': history}), 200
+        return jsonify({'history': user_history}), 200
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500

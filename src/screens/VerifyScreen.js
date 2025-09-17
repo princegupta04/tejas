@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { globalStyles, colors } from '../styles/globalStyles';
+import { maskMobile } from '../utils/validation';
 
 const VerifyScreen = ({ navigation, route }) => {
   const [code, setCode] = useState(['', '', '', '', '', '']);
@@ -8,7 +9,7 @@ const VerifyScreen = ({ navigation, route }) => {
   const [resendTimer, setResendTimer] = useState(30);
   const [canResend, setCanResend] = useState(false);
   
-  const email = route.params?.email || '';
+  const mobile = route.params?.mobile || '';
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -48,13 +49,29 @@ const VerifyScreen = ({ navigation, route }) => {
     setLoading(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // For demo purposes, accept any 6-digit code
-      navigation.navigate('ChatBot');
+      // Call backend API to verify OTP
+      const response = await fetch('http://localhost:5000/api/verify-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          mobile: mobile,
+          code: verificationCode 
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Store token for later use (in a real app, use secure storage)
+        // For now, navigate to profile details screen
+        navigation.navigate('ProfileDetails', { mobile: mobile, token: data.token });
+      } else {
+        Alert.alert('Error', data.error || 'Invalid verification code. Please try again.');
+      }
     } catch (error) {
-      Alert.alert('Error', 'Invalid verification code. Please try again.');
+      Alert.alert('Error', 'Unable to verify OTP. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -66,9 +83,24 @@ const VerifyScreen = ({ navigation, route }) => {
     setCanResend(false);
     setResendTimer(30);
     
-    // Simulate resend API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    Alert.alert('Code Sent', 'A new verification code has been sent to your email.');
+    try {
+      // Call backend API to resend OTP
+      const response = await fetch('http://localhost:5000/api/send-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ mobile: mobile }),
+      });
+
+      if (response.ok) {
+        Alert.alert('OTP Sent', 'A new verification code has been sent to your mobile.');
+      } else {
+        Alert.alert('Error', 'Failed to resend OTP. Please try again.');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Unable to resend OTP. Please try again.');
+    }
     
     // Restart timer
     const timer = setInterval(() => {
@@ -83,19 +115,19 @@ const VerifyScreen = ({ navigation, route }) => {
     }, 1000);
   };
 
-  const maskedEmail = email.replace(/(.{2})(.*)(@.*)/, '$1***$3');
+  const maskedMobile = maskMobile(mobile);
 
   return (
     <View style={globalStyles.container}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.icon}>📧</Text>
+          <Text style={styles.icon}>📱</Text>
           <Text style={[globalStyles.title, styles.title]}>
-            Verify Your Email
+            Verify Your Mobile
           </Text>
           <Text style={[globalStyles.body, styles.subtitle]}>
             We've sent a 6-digit verification code to{'\n'}
-            <Text style={styles.email}>{maskedEmail}</Text>
+            <Text style={styles.mobile}>{maskedMobile}</Text>
           </Text>
         </View>
 
@@ -125,7 +157,7 @@ const VerifyScreen = ({ navigation, route }) => {
           disabled={loading}
         >
           <Text style={globalStyles.buttonText}>
-            {loading ? 'Verifying...' : 'Verify Email'}
+            {loading ? 'Verifying...' : 'Verify Mobile'}
           </Text>
         </TouchableOpacity>
 
@@ -175,6 +207,10 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   email: {
+    fontWeight: '600',
+    color: colors.primary,
+  },
+  mobile: {
     fontWeight: '600',
     color: colors.primary,
   },

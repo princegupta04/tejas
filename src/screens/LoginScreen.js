@@ -1,123 +1,95 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { globalStyles, colors } from '../styles/globalStyles';
+import { isValidMobile, formatMobile, cleanMobile } from '../utils/validation';
 
 const LoginScreen = ({ navigation, route }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [mobile, setMobile] = useState('');
   const [loading, setLoading] = useState(false);
-  
-  const isSignupMode = route.params?.mode === 'signup';
 
-  const handleSubmit = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+
+  const handleSendOTP = async () => {
+    if (!mobile) {
+      Alert.alert('Error', 'Please enter your mobile number');
       return;
     }
 
-    if (!isValidEmail(email)) {
-      Alert.alert('Error', 'Please enter a valid email address');
-      return;
-    }
-
-    if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters long');
+    if (!isValidMobile(mobile)) {
+      Alert.alert('Error', 'Please enter a valid 10-digit mobile number');
       return;
     }
 
     setLoading(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const cleanNumber = cleanMobile(mobile);
       
-      // Navigate to verify screen with email
-      navigation.navigate('Verify', { email });
+      // Call backend API to send OTP
+      const response = await fetch('http://localhost:5000/api/send-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ mobile: cleanNumber }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Navigate to verify screen with mobile number
+        navigation.navigate('Verify', { mobile: cleanNumber });
+        Alert.alert('OTP Sent', 'Please check your mobile for the verification code');
+      } else {
+        Alert.alert('Error', data.error || 'Failed to send OTP');
+      }
     } catch (error) {
-      Alert.alert('Error', 'Something went wrong. Please try again.');
+      Alert.alert('Error', 'Unable to send OTP. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const isValidEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
 
-  const handleSwitchMode = () => {
-    navigation.setParams({ mode: isSignupMode ? 'login' : 'signup' });
-  };
 
   return (
     <View style={globalStyles.container}>
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={[globalStyles.title, styles.title]}>
-            {isSignupMode ? 'Create Account' : 'Welcome Back'}
+            Welcome to AstroChat
           </Text>
           <Text style={[globalStyles.body, styles.subtitle]}>
-            {isSignupMode 
-              ? 'Join AstroChat to discover your cosmic destiny' 
-              : 'Sign in to continue your astrological journey'
-            }
+            Enter your mobile number to get started with your cosmic journey
           </Text>
         </View>
 
         <View style={styles.form}>
           <TextInput
             style={globalStyles.input}
-            placeholder="Email Address"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoComplete="email"
-          />
-          
-          <TextInput
-            style={globalStyles.input}
-            placeholder="Password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoComplete={isSignupMode ? "new-password" : "current-password"}
+            placeholder="Mobile Number (10 digits)"
+            value={mobile}
+            onChangeText={setMobile}
+            keyboardType="phone-pad"
+            maxLength={10}
+            autoCompleteType="tel"
           />
 
           <TouchableOpacity 
             style={[globalStyles.button, styles.submitButton, loading && styles.disabledButton]} 
-            onPress={handleSubmit}
+            onPress={handleSendOTP}
             disabled={loading}
           >
             <Text style={globalStyles.buttonText}>
-              {loading 
-                ? 'Loading...' 
-                : isSignupMode 
-                  ? 'Create Account' 
-                  : 'Sign In'
-              }
+              {loading ? 'Sending OTP...' : 'Send OTP'}
             </Text>
           </TouchableOpacity>
         </View>
 
-        <View style={styles.switchContainer}>
-          <Text style={[globalStyles.body, styles.switchText]}>
-            {isSignupMode ? 'Already have an account?' : "Don't have an account?"}
+        <View style={styles.infoContainer}>
+          <Text style={[globalStyles.body, styles.infoText]}>
+            We'll send a 6-digit verification code to your mobile number
           </Text>
-          <TouchableOpacity onPress={handleSwitchMode}>
-            <Text style={[globalStyles.body, styles.switchLink]}>
-              {isSignupMode ? 'Sign In' : 'Sign Up'}
-            </Text>
-          </TouchableOpacity>
         </View>
-
-        {!isSignupMode && (
-          <TouchableOpacity style={styles.forgotPassword}>
-            <Text style={[globalStyles.body, styles.forgotPasswordText]}>
-              Forgot Password?
-            </Text>
-          </TouchableOpacity>
-        )}
       </View>
     </View>
   );
@@ -155,25 +127,15 @@ const styles = StyleSheet.create({
   disabledButton: {
     opacity: 0.6,
   },
-  switchContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+  infoContainer: {
     alignItems: 'center',
-    marginBottom: 20,
+    paddingHorizontal: 20,
   },
-  switchText: {
-    marginRight: 5,
-  },
-  switchLink: {
-    color: colors.primary,
-    fontWeight: '600',
-  },
-  forgotPassword: {
-    alignItems: 'center',
-  },
-  forgotPasswordText: {
-    color: colors.primary,
+  infoText: {
+    textAlign: 'center',
+    opacity: 0.7,
     fontSize: 14,
+    lineHeight: 20,
   },
 });
 
