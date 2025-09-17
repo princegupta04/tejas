@@ -6,8 +6,8 @@ A comprehensive astrology chat bot application built with React Native Expo fron
 
 - **Welcome Screen**: Beautiful introduction to the app
 - **Get Started Screen**: Feature showcase and registration options
-- **Login/Signup Screen**: User authentication with email and password
-- **Email Verification**: 6-digit code verification system
+- **Mobile OTP Authentication**: Simple and secure mobile number verification
+- **Profile Setup**: Collect user birth details for personalized astrological insights
 - **Chat Bot Screen**: Interactive AI astrologer chat interface
 - **Responsive Design**: Optimized for mobile devices
 - **Custom Styling**: Beautiful UI with Poppins font and cosmic theme
@@ -156,10 +156,10 @@ mongod
 
 ## API Endpoints
 
-### Authentication
-- `POST /api/register` - Register new user
-- `POST /api/login` - User login
-- `POST /api/verify` - Email verification
+### Mobile Authentication
+- `POST /api/send-otp` - Send OTP to mobile number
+- `POST /api/verify-otp` - Verify mobile OTP and create/login user
+- `POST /api/profile` - Save user profile details
 
 ### Chat
 - `POST /api/chat` - Send message to AI astrologer
@@ -211,12 +211,13 @@ The chat bot provides:
 
 ## Security Features
 
-- Password hashing with bcrypt
+- Mobile OTP verification
 - JWT token authentication
-- Email verification system
 - Input validation and sanitization
 - CORS protection
 - Secure API endpoints
+- In-memory OTP storage with expiration (5 minutes)
+- Rate limiting for OTP attempts
 
 ## Development
 
