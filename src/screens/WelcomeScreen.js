@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { globalStyles, colors } from '../styles/globalStyles';
 
 const WelcomeScreen = ({ navigation }) => {
@@ -8,22 +9,23 @@ const WelcomeScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={[globalStyles.container, styles.container]}>
+    <LinearGradient
+      colors={["#FB9E3A", "#FBBF5D", "#FCEF91"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={[globalStyles.container, styles.container]}
+    >
       <View style={styles.content}>
         <View style={styles.logoContainer}>
-          <Text style={styles.logo}>🔮</Text>
-          <Text style={[globalStyles.title, styles.appName]}>AstroChat</Text>
-          <Text style={[globalStyles.subtitle, styles.tagline]}>
-            Your Personal Astrology Guide
+          <Image source={require('../../assets/pandit.png')} style={styles.logoImage} />
+          <Text style={[styles.headingText]}>
+            Welcome to
+          </Text>
+          <Text style={[styles.headingText]}> 
+             Humara Pandit
           </Text>
         </View>
-        
-        <View style={styles.welcomeTextContainer}>
-          <Text style={[globalStyles.body, styles.welcomeText]}>
-            Discover your cosmic destiny with personalized astrology readings and chat with our AI astrologer
-          </Text>
-        </View>
-        
+
         <TouchableOpacity 
           style={[globalStyles.button, styles.getStartedButton]} 
           onPress={handleGetStarted}
@@ -31,7 +33,7 @@ const WelcomeScreen = ({ navigation }) => {
           <Text style={globalStyles.buttonText}>Get Started</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </LinearGradient>
   );
 };
 
@@ -53,7 +55,24 @@ const styles = StyleSheet.create({
     fontSize: 80,
     marginBottom: 20,
   },
+  logoImage: {
+    borderRadius: 153,
+    width: 306,
+    height: 306,
+    marginBottom: 20,
+    resizeMode: 'contain',
+    opacity: 1,
+    alignSelf: 'center', // center horizontally
+  },
   appName: {
+    fontFamily: 'Poppins',
+    fontWeight: '700',
+    fontStyle: 'bold',
+    fontSize: 35,
+    lineHeight: 40,
+    letterSpacing: 0,
+    textAlign: 'center',
+    color: colors.primary,
     marginBottom: 10,
   },
   tagline: {
@@ -71,6 +90,15 @@ const styles = StyleSheet.create({
   getStartedButton: {
     width: '100%',
     alignItems: 'center',
+    backgroundColor: '#4D1E00', // button background color
+  },
+  headingText: {
+    fontFamily: 'Poppins',
+    fontWeight: '700',
+    fontSize: 35,
+    lineHeight: 40,
+    textAlign: 'center',
+    color: '#4B1E01', // text color only
   },
 });
 

@@ -128,6 +128,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 30,
     paddingTop: 80,
+    backgroundColor: colors.background, // maintain app background color
   },
   header: {
     alignItems: 'center',
@@ -148,6 +149,8 @@ const styles = StyleSheet.create({
   submitButton: {
     alignItems: 'center',
     marginTop: 20,
+    backgroundColor: '#4D1E00', // match button color with WelcomeScreen
+    borderRadius: 25,
   },
   disabledButton: {
     opacity: 0.6,

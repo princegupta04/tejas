@@ -35,7 +35,7 @@ const GetStartedScreen = ({ navigation }) => {
   ];
 
   return (
-    <View style={globalStyles.container}>
+    <View style={[globalStyles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.header}>
           <Text style={[globalStyles.title, styles.title]}>
@@ -64,7 +64,7 @@ const GetStartedScreen = ({ navigation }) => {
 
         <View style={styles.buttonContainer}>
           <TouchableOpacity 
-            style={[globalStyles.button, styles.primaryButton]} 
+            style={[globalStyles.button, styles.primaryButton, { backgroundColor: '#4D1E00' }]}
             onPress={handleSignUp}
           >
             <Text style={globalStyles.buttonText}>Create Account</Text>

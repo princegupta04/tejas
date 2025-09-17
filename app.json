@@ -4,13 +4,14 @@
     "slug": "astrology-chatbot",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/logo.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "backgroundColor": "#fB9E3A",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#fB9E3A"
     },
     "ios": {
       "supportsTablet": true
@@ -18,7 +19,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#fB9E3A"
       },
       "edgeToEdgeEnabled": true
     },
