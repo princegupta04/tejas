@@ -10,6 +10,7 @@ import {
   Platform,
   Image
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { globalStyles, colors } from '../styles/globalStyles';
 
 const ChatBotScreen = ({ navigation }) => {
@@ -111,9 +112,6 @@ const ChatBotScreen = ({ navigation }) => {
 
   const renderTypingIndicator = () => (
     <View style={[styles.messageContainer, styles.botMessage]}>
-      <View style={styles.botAvatar}>
-        <Text style={styles.botAvatarText}>🔮</Text>
-      </View>
       <View style={[styles.messageContent, styles.botMessageContent, styles.typingContainer]}>
         <Text style={styles.typingText}>AstroBot is typing...</Text>
       </View>
@@ -125,7 +123,10 @@ const ChatBotScreen = ({ navigation }) => {
       style={globalStyles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <View style={styles.header}>
+      <LinearGradient
+        colors={["#FB9E3A", "#FBBF5D", "#FCEF91"]}
+        style={styles.header}
+      >
         <TouchableOpacity 
           style={styles.backButton}
           onPress={() => navigation.goBack()}
@@ -147,7 +148,7 @@ const ChatBotScreen = ({ navigation }) => {
             <Text style={styles.onlineText}>Online</Text>
           </View>
         </View>
-      </View>
+      </LinearGradient>
 
       <FlatList
         ref={flatListRef}
@@ -164,7 +165,7 @@ const ChatBotScreen = ({ navigation }) => {
           style={styles.textInput}
           value={inputText}
           onChangeText={setInputText}
-          placeholder="Ask about your horoscope, birth chart, or cosmic guidance..."
+          placeholder="Ask Tejas about your birth chart ."
           placeholderTextColor={colors.gray}
           multiline
           maxLength={500}
@@ -188,7 +189,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 50,
     paddingBottom: 15,
-    backgroundColor: colors.white,
     borderBottomWidth: 1,
     borderBottomColor: colors.lightGray,
   },
@@ -262,6 +262,7 @@ const styles = StyleSheet.create({
   },
   messagesList: {
     flex: 1,
+    backgroundColor: colors.white,
   },
   messagesContainer: {
     paddingVertical: 20,
@@ -289,17 +290,18 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   messageContent: {
+    backgroundColor: '#fB9E3A',
     maxWidth: '75%',
     borderRadius: 15,
     paddingHorizontal: 15,
     paddingVertical: 10,
   },
   botMessageContent: {
-    backgroundColor: colors.white,
+    backgroundColor: '#FEE2AD',
     borderBottomLeftRadius: 5,
   },
   userMessageContent: {
-    backgroundColor: colors.primary,
+    backgroundColor: '#F5FOCD',
     borderBottomRightRadius: 5,
     marginLeft: 'auto',
   },

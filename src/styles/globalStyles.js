@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 export const colors = {
   background: '#FB9E3A', // Use a solid color for fallback/background
   primary: '#4285F4', // App blue
-  text: '#000000',
+  text: '#333333',
   white: '#FFFFFF',
   gray: '#666666',
   lightGray: '#E0E0E0',
@@ -70,4 +70,4 @@ export const globalStyles = StyleSheet.create({
     borderColor: colors.lightGray,
     ...typography.body,
   },
-});
+})
