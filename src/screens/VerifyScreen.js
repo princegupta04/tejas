@@ -17,6 +17,13 @@ const VerifyScreen = ({ navigation, route }) => {
   const [loading, setLoading] = useState(false);
   const [resendTimer, setResendTimer] = useState(30);
   const [canResend, setCanResend] = useState(false);
+  
+  const inputRefs = [
+    React.useRef(null),
+    React.useRef(null),
+    React.useRef(null),
+    React.useRef(null),
+  ];
 
   const phone = route.params?.phone || '';
 
@@ -36,9 +43,22 @@ const VerifyScreen = ({ navigation, route }) => {
   }, []);
 
   const handleCodeChange = (value, index) => {
+    // Only allow numbers
+    if (!/^\d*$/.test(value)) return;
+
     const newCode = [...code];
     newCode[index] = value;
     setCode(newCode);
+
+    // If a digit is entered and there is a next input, focus it
+    if (value.length === 1 && index < 3) {
+      inputRefs[index + 1].current.focus();
+    }
+
+    // If digit is deleted and there is a previous input, focus it
+    if (value.length === 0 && index > 0) {
+      inputRefs[index - 1].current.focus();
+    }
   };
 
   const handleVerify = async () => {
@@ -109,12 +129,18 @@ const VerifyScreen = ({ navigation, route }) => {
             {code.map((digit, index) => (
               <TextInput
                 key={index}
+                ref={inputRefs[index]}
                 style={styles.codeInput}
                 value={digit}
                 onChangeText={(value) => handleCodeChange(value, index)}
                 keyboardType="numeric"
                 maxLength={1}
                 textAlign="center"
+                onKeyPress={({ nativeEvent }) => {
+                  if (nativeEvent.key === 'Backspace' && index > 0 && !digit) {
+                    inputRefs[index - 1].current.focus();
+                  }
+                }}
               />
             ))}
           </View>
