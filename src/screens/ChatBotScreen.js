@@ -7,7 +7,8 @@ import {
   StyleSheet, 
   FlatList, 
   KeyboardAvoidingView, 
-  Platform 
+  Platform,
+  Image
 } from 'react-native';
 import { globalStyles, colors } from '../styles/globalStyles';
 
@@ -81,7 +82,11 @@ const ChatBotScreen = ({ navigation }) => {
     ]}>
       {item.isBot && (
         <View style={styles.botAvatar}>
-          <Text style={styles.botAvatarText}>🔮</Text>
+          <Image 
+            source={require('../../assets/bot-icon.png')} 
+            style={styles.botAvatarImage} 
+            resizeMode="cover"
+          />
         </View>
       )}
       <View style={[
@@ -128,11 +133,19 @@ const ChatBotScreen = ({ navigation }) => {
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
         <View style={styles.headerInfo}>
-          <Text style={styles.headerTitle}>AstroBot</Text>
-          <Text style={styles.headerSubtitle}>Your AI Astrologer</Text>
-        </View>
-        <View style={styles.headerAvatar}>
-          <Text style={styles.headerAvatarText}>🔮</Text>
+          <View style={styles.titleRow}>
+            <Text style={styles.headerTitle}>Chat With Tejas</Text>
+            <View style={styles.creditsButton}>
+              <Text style={styles.creditsText}>⭐ 51</Text>
+            </View>
+            <TouchableOpacity style={styles.buyCreditsButton}>
+              <Text style={styles.buyCreditsText}>+ Buy Credits</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.onlineContainer}>
+            <View style={styles.onlineDot} />
+            <Text style={styles.onlineText}>Online</Text>
+          </View>
         </View>
       </View>
 
@@ -189,26 +202,63 @@ const styles = StyleSheet.create({
   headerInfo: {
     flex: 1,
     marginLeft: 15,
+    marginRight: 5,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+    flexWrap: 'nowrap',
+    justifyContent: 'flex-start',
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
     color: colors.text,
+    marginRight: 8,
+    flexShrink: 1,
+    maxWidth: '35%',
   },
-  headerSubtitle: {
+  onlineContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  onlineDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#2ECC71',
+    marginRight: 5,
+  },
+  onlineText: {
     fontSize: 14,
     color: colors.gray,
   },
-  headerAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.background,
-    justifyContent: 'center',
-    alignItems: 'center',
+  creditsButton: {
+    backgroundColor: '#4D1E00',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginRight: 3,
+    flexShrink: 0,
   },
-  headerAvatarText: {
-    fontSize: 20,
+  creditsText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 13,
+  },
+  buyCreditsButton: {
+    backgroundColor: '#4D1E00',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    flexShrink: 0,
+  },
+  buyCreditsText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 12,
+    textAlign: 'center',
   },
   messagesList: {
     flex: 1,
@@ -231,13 +281,12 @@ const styles = StyleSheet.create({
     width: 35,
     height: 35,
     borderRadius: 17.5,
-    backgroundColor: colors.lightGray,
-    justifyContent: 'center',
-    alignItems: 'center',
     marginRight: 10,
+    overflow: 'hidden',
   },
-  botAvatarText: {
-    fontSize: 16,
+  botAvatarImage: {
+    width: '100%',
+    height: '100%',
   },
   messageContent: {
     maxWidth: '75%',
