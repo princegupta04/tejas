@@ -1,15 +1,32 @@
-from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi import FastAPI, HTTPException, Depends, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from passlib.context import CryptContext
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from typing import Optional
 import motor.motor_asyncio
-from passlib.context import CryptContext
 import jwt
-import datetime
+from datetime import datetime, timedelta
 import os
+from dotenv import load_dotenv
 import random
 import string
+from google.oauth2 import id_token
+from google.auth.transport import requests
+from twilio.rest import Client
+
+# Load environment variables
+load_dotenv()
+
+# Twilio configuration
+TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
+TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
+TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
+twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+
+# Google OAuth configuration
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 
 app = FastAPI(title="AstroChat API", description="Astrology Chat Bot Backend API")
 
@@ -23,8 +40,25 @@ app.add_middleware(
 )
 
 # MongoDB setup
-MONGO_URL = os.getenv("MONGO_URI", "mongodb://localhost:27017")
-client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URL)
+from urllib.parse import quote_plus
+mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017")
+if "@" in mongo_uri:
+    # If there's authentication info, we need to escape it
+    prefix = mongo_uri[:mongo_uri.find("://") + 3]
+    rest = mongo_uri[len(prefix):]
+    if "@" in rest:
+        auth = rest[:rest.find("@")]
+        if ":" in auth:
+            username, password = auth.split(":")
+            escaped_uri = f"{prefix}{quote_plus(username)}:{quote_plus(password)}@{rest[rest.find('@')+1:]}"
+        else:
+            escaped_uri = mongo_uri
+    else:
+        escaped_uri = mongo_uri
+else:
+    escaped_uri = mongo_uri
+
+client = motor.motor_asyncio.AsyncIOMotorClient(escaped_uri)
 database = client.astrochat
 
 # Collections
@@ -38,17 +72,15 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
 
 # Pydantic models
-class UserRegister(BaseModel):
-    email: EmailStr
-    password: str
+class PhoneNumber(BaseModel):
+    phone: str
 
-class UserLogin(BaseModel):
-    email: EmailStr
-    password: str
+class OTPVerification(BaseModel):
+    phone: str
+    otp: str
 
-class EmailVerification(BaseModel):
-    email: EmailStr
-    code: str
+class GoogleAuth(BaseModel):
+    token: str
 
 class ChatMessage(BaseModel):
     message: str
@@ -56,22 +88,46 @@ class ChatMessage(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+    user_id: str
 
-def generate_verification_code():
+def generate_otp():
+    """Generate a 6-digit OTP"""
     return ''.join(random.choices(string.digits, k=6))
 
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
+def send_otp(phone_number: str, otp: str):
+    """Send OTP via Twilio"""
+    try:
+        message = twilio_client.messages.create(
+            body=f"Your OTP for Humara Pandit is: {otp}",
+            from_=TWILIO_PHONE_NUMBER,
+            to=phone_number
+        )
+        return True
+    except Exception as e:
+        print(f"Error sending OTP: {e}")
+        return False
 
-def get_password_hash(password):
-    return pwd_context.hash(password)
+def verify_google_token(token: str):
+    """Verify Google OAuth token"""
+    try:
+        idinfo = id_token.verify_oauth2_token(
+            token, requests.Request(), GOOGLE_CLIENT_ID)
+        
+        if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+            raise ValueError('Wrong issuer.')
+        
+        return idinfo
+    except Exception as e:
+        print(f"Error verifying Google token: {e}")
+        return None
 
-def create_access_token(data: dict, expires_delta: Optional[datetime.timedelta] = None):
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    """Create JWT access token"""
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.datetime.utcnow() + expires_delta
+        expire = datetime.utcnow() + expires_delta
     else:
-        expire = datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+        expire = datetime.utcnow() + timedelta(hours=24)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
@@ -121,103 +177,124 @@ async def root():
 async def health_check():
     return {"status": "healthy", "timestamp": datetime.datetime.utcnow()}
 
-@app.post("/api/register")
-async def register(user: UserRegister):
-    # Check if user already exists
-    existing_user = await users_collection.find_one({"email": user.email})
-    if existing_user:
+@app.post("/api/send-otp")
+async def send_otp_handler(phone_data: PhoneNumber):
+    # Validate phone number format (you might want to add more validation)
+    if not phone_data.phone or len(phone_data.phone) < 10:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User already exists"
+            detail="Invalid phone number"
         )
-    
-    # Generate verification code
-    verification_code = generate_verification_code()
-    
-    # Hash password
-    hashed_password = get_password_hash(user.password)
-    
-    # Create user document
-    user_doc = {
-        "email": user.email,
-        "password_hash": hashed_password,
-        "verification_code": verification_code,
-        "is_verified": False,
-        "created_at": datetime.datetime.utcnow()
-    }
-    
-    result = await users_collection.insert_one(user_doc)
-    
-    return {
-        "message": "User registered successfully",
-        "verification_code": verification_code,  # Remove in production
-        "user_id": str(result.inserted_id)
-    }
 
-@app.post("/api/login")
-async def login(user: UserLogin):
-    # Find user
-    db_user = await users_collection.find_one({"email": user.email})
-    if not db_user or not verify_password(user.password, db_user["password_hash"]):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials"
-        )
+    # Generate OTP
+    otp = generate_otp()
     
-    if not db_user.get("is_verified", False):
-        # Generate new verification code
-        verification_code = generate_verification_code()
-        await users_collection.update_one(
-            {"_id": db_user["_id"]},
-            {"$set": {"verification_code": verification_code}}
-        )
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Email not verified",
-            headers={"verification_code": verification_code}  # Remove in production
-        )
-    
-    # Create access token
-    access_token = create_access_token(
-        data={"user_id": str(db_user["_id"]), "email": user.email}
+    # Store OTP in database with expiration
+    await users_collection.update_one(
+        {"phone": phone_data.phone},
+        {
+            "$set": {
+                "phone": phone_data.phone,
+                "otp": otp,
+                "otp_created_at": datetime.utcnow(),
+                "is_verified": False
+            }
+        },
+        upsert=True
     )
     
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "user_id": str(db_user["_id"])
-    }
+    # Send OTP via Twilio
+    if not send_otp(phone_data.phone, otp):
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to send OTP"
+        )
+    
+    return {"message": "OTP sent successfully"}
 
-@app.post("/api/verify")
-async def verify_email(verification: EmailVerification):
-    # Find user and verify code
+@app.post("/api/verify-otp")
+async def verify_otp_handler(verification: OTPVerification):
+    # Find user with OTP
     user = await users_collection.find_one({
-        "email": verification.email,
-        "verification_code": verification.code
+        "phone": verification.phone,
+        "otp": verification.otp
     })
     
     if not user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid verification code"
+            detail="Invalid OTP"
+        )
+    
+    # Check OTP expiration (5 minutes)
+    otp_created_at = user.get("otp_created_at")
+    if not otp_created_at or (datetime.utcnow() - otp_created_at).total_seconds() > 300:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="OTP expired"
         )
     
     # Update user as verified
     await users_collection.update_one(
         {"_id": user["_id"]},
-        {"$set": {"is_verified": True, "verification_code": None}}
+        {
+            "$set": {
+                "is_verified": True,
+                "otp": None,
+                "otp_created_at": None
+            }
+        }
     )
     
     # Create access token
     access_token = create_access_token(
-        data={"user_id": str(user["_id"]), "email": verification.email}
+        data={"user_id": str(user["_id"]), "phone": verification.phone}
     )
     
     return {
         "access_token": access_token,
         "token_type": "bearer",
         "user_id": str(user["_id"]),
-        "message": "Email verified successfully"
+        "message": "Phone number verified successfully"
+    }
+
+@app.post("/api/google-auth")
+async def google_auth_handler(auth_data: GoogleAuth):
+    # Verify Google token
+    google_user = verify_google_token(auth_data.token)
+    if not google_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid Google token"
+        )
+    
+    # Find or create user
+    user = await users_collection.find_one({"google_id": google_user['sub']})
+    
+    if not user:
+        # Create new user
+        user_doc = {
+            "google_id": google_user['sub'],
+            "email": google_user.get('email'),
+            "name": google_user.get('name'),
+            "picture": google_user.get('picture'),
+            "is_verified": True,
+            "created_at": datetime.utcnow()
+        }
+        result = await users_collection.insert_one(user_doc)
+        user_id = str(result.inserted_id)
+    else:
+        user_id = str(user["_id"])
+    
+    # Create access token
+    access_token = create_access_token(
+        data={"user_id": user_id, "google_id": google_user['sub']}
+    )
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user_id": user_id
     }
 
 @app.post("/api/chat")
