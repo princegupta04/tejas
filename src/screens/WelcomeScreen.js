@@ -1,21 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-  Alert,
-  ActivityIndicator,
-} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, Image, Alert, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { globalStyles } from '../styles/globalStyles';
-import { useNavigation } from '@react-navigation/native';
+import { welcomeStyles } from '../styles/screenStyles';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
-import * as AuthSession from 'expo-auth-session';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { googleAuth, checkAuthStatus } from '../utils/api';
+import { useNavigation } from '@react-navigation/native';
+import { AuthSession } from 'expo-auth-session';
+import { checkAuthStatus } from '../utils/api';
 
 // ✅ Must call this once
 WebBrowser.maybeCompleteAuthSession();
@@ -156,40 +148,40 @@ const WelcomeScreen = () => {
       colors={['#FB9E3A', '#FBBF5D', '#FCEF91']}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
-      style={[globalStyles.container, styles.container]}
+      style={[globalStyles.container, welcomeStyles.container]}
     >
-      <View style={styles.content}>
-        <View style={styles.logoContainer}>
+      <View style={welcomeStyles.content}>
+        <View style={welcomeStyles.logoContainer}>
           <Image
             source={require('../../assets/pandit.png')}
-            style={styles.logoImage}
+            style={welcomeStyles.logoImage}
           />
-          <Text style={[styles.headingText]}>Welcome to</Text>
-          <Text style={[styles.headingText]}>Humara Pandit</Text>
+          <Text style={[welcomeStyles.headingText]}>Welcome to</Text>
+          <Text style={[welcomeStyles.headingText]}>Humara Pandit</Text>
         </View>
 
         <TouchableOpacity
-          style={[globalStyles.button, styles.getStartedButton]}
+          style={[globalStyles.button, welcomeStyles.getStartedButton]}
           onPress={handleGetStarted}
         >
           <Text style={globalStyles.buttonText}>Login with mobile</Text>
         </TouchableOpacity>
 
-        <View style={styles.dividerContainer}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>Or</Text>
-          <View style={styles.dividerLine} />
+        <View style={welcomeStyles.dividerContainer}>
+          <View style={welcomeStyles.dividerLine} />
+          <Text style={welcomeStyles.dividerText}>Or</Text>
+          <View style={welcomeStyles.dividerLine} />
         </View>
 
         <TouchableOpacity
-          style={[styles.googleButton, loading && styles.disabledButton]}
+          style={[welcomeStyles.googleButton, loading && welcomeStyles.disabledButton]}
           onPress={signWithGoogle}
           disabled={loading}
         >
           {loading ? (
-            <View style={styles.loadingContainer}>
+            <View style={welcomeStyles.loadingContainer}>
               <ActivityIndicator color="#4D1E00" />
-              <Text style={[styles.googleButtonText, styles.loadingText]}>
+              <Text style={[welcomeStyles.googleButtonText, welcomeStyles.loadingText]}>
                 Signing in...
               </Text>
             </View>
@@ -197,9 +189,9 @@ const WelcomeScreen = () => {
             <>
               <Image
                 source={require('../../assets/google-icon.png')}
-                style={styles.googleIcon}
+                style={welcomeStyles.googleIcon}
               />
-              <Text style={styles.googleButtonText}>Continue with Google</Text>
+              <Text style={welcomeStyles.googleButtonText}>Continue with Google</Text>
             </>
           )}
         </TouchableOpacity>
@@ -207,99 +199,5 @@ const WelcomeScreen = () => {
     </LinearGradient>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 30,
-  },
-  content: {
-    alignItems: 'center',
-    width: '100%',
-  },
-  logoContainer: {
-    alignItems: 'center',
-    marginBottom: 80,
-  },
-  logoImage: {
-    borderRadius: 153,
-    width: 306,
-    height: 306,
-    marginBottom: 20,
-    resizeMode: 'contain',
-    alignSelf: 'center',
-  },
-  getStartedButton: {
-    width: '100%',
-    alignItems: 'center',
-    backgroundColor: '#4D1E00',
-  },
-  headingText: {
-    fontFamily: 'Poppins',
-    fontWeight: '700',
-    fontSize: 35,
-    lineHeight: 40,
-    textAlign: 'center',
-    color: '#4B1E01',
-  },
-  googleButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 25,
-    marginTop: 15,
-    width: '100%',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  googleIcon: {
-    width: 24,
-    height: 24,
-    marginRight: 12,
-  },
-  googleButtonText: {
-    fontFamily: 'Poppins',
-    fontWeight: '600',
-    fontSize: 16,
-    color: '#000000',
-    textAlign: 'center',
-  },
-  dividerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
-    marginVertical: 15,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#4B1E01',
-  },
-  dividerText: {
-    fontFamily: 'Poppins',
-    fontSize: 16,
-    color: '#4B1E01',
-    paddingHorizontal: 10,
-    fontWeight: '500',
-  },
-  disabledButton: {
-    opacity: 0.7,
-  },
-  loadingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  loadingText: {
-    marginLeft: 8,
-  },
-});
 
 export default WelcomeScreen;

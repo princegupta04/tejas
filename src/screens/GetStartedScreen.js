@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { globalStyles, colors  , headingText} from '../styles/globalStyles';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { globalStyles, colors } from '../styles/globalStyles';
+import { getStartedStyles } from '../styles/screenStyles';
 
 const GetStartedScreen = ({ navigation }) => {
   const handleClick = () => {
@@ -32,28 +33,28 @@ const GetStartedScreen = ({ navigation }) => {
 
   return (
     <View style={[globalStyles.container, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.header}>
-          <Text style={[styles.headingText]}>
+      <ScrollView contentContainerStyle={getStartedStyles.container}>
+        <View style={getStartedStyles.header}>
+          <Text style={[getStartedStyles.headingText]}>
             Welcome to
           </Text>
-          <Text style={[styles.headingText]}>
+          <Text style={[getStartedStyles.headingText]}>
             Tejas
           </Text>
-          <Text style={[globalStyles.body, styles.subtitle]}>
+          <Text style={[globalStyles.body, getStartedStyles.subtitle]}>
             Unlock the mysteries of the universe
           </Text>
         </View>
 
-        <View style={styles.featuresContainer}>
+        <View style={getStartedStyles.featuresContainer}>
           {features.map((feature, index) => (
-            <View key={index} style={styles.featureCard}>
-              <Text style={styles.featureIcon}>{feature.icon}</Text>
-              <View style={styles.featureText}>
-                <Text style={[globalStyles.subtitle, styles.featureTitle]}>
+            <View key={index} style={getStartedStyles.featureCard}>
+              <Text style={getStartedStyles.featureIcon}>{feature.icon}</Text>
+              <View style={getStartedStyles.featureText}>
+                <Text style={[globalStyles.subtitle, getStartedStyles.featureTitle]}>
                   {feature.title}
                 </Text>
-                <Text style={[globalStyles.body, styles.featureDescription]}>
+                <Text style={[globalStyles.body, getStartedStyles.featureDescription]}>
                   {feature.description}
                 </Text>
               </View>
@@ -61,9 +62,9 @@ const GetStartedScreen = ({ navigation }) => {
           ))}
         </View>
 
-        <View style={styles.buttonContainer}>
+        <View style={getStartedStyles.buttonContainer}>
           <TouchableOpacity 
-            style={[globalStyles.button, styles.primaryButton, { backgroundColor: '#4D1E00' }]}
+            style={[globalStyles.button, getStartedStyles.primaryButton, { backgroundColor: '#4D1E00' }]}
             onPress={handleClick}
           >
             <Text style={globalStyles.buttonText}>Chat With Tejas</Text>
@@ -74,82 +75,5 @@ const GetStartedScreen = ({ navigation }) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 30,
-    paddingVertical: 50,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  title: {
-    textAlign: 'center',
-    marginBottom: 15,
-  },
-  subtitle: {
-    textAlign: 'center',
-    opacity: 0.7,
-  },
-  featuresContainer: {
-    marginTop: -20,  
-    marginBottom: 40,
-  },
-  featureCard: {
-    flexDirection: 'row',
-    backgroundColor: colors.white,
-    padding: 20,
-    borderRadius: 15,
-    marginBottom: 15,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  featureIcon: {
-    fontSize: 40,
-    marginRight: 15,
-  },
-  featureText: {
-    flex: 1,
-  },
-  featureTitle: {
-    fontSize: 18,
-    marginBottom: 5,
-  },
-  featureDescription: {
-    fontSize: 14,
-    opacity: 0.7,
-    lineHeight: 18,
-  },
-  buttonContainer: {
-    marginTop: -45,
-  },
-  primaryButton: {
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  secondaryButton: {
-    alignItems: 'center',
-    paddingVertical: 15,
-    marginTop:-25,
-    },
-  secondaryButtonText: {
-    color: colors.primary,
-  },
-   headingText: {
-    fontFamily: 'Poppins',
-    fontWeight: '700',
-    fontSize: 35,
-    lineHeight: 40,
-    textAlign: 'center',
-    color: '#4B1E01', // text color only
-  },
-});
 
 export default GetStartedScreen;

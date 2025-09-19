@@ -1,17 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  StyleSheet, 
-  FlatList, 
-  KeyboardAvoidingView, 
-  Platform,
-  Image
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { globalStyles, colors } from '../styles/globalStyles';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TextInput, TouchableOpacity, FlatList, Image } from 'react-native';
+import { colors } from '../styles/globalStyles';
+import { chatBotStyles } from '../styles/screenStyles';
 
 const ChatBotScreen = ({ navigation }) => {
   const [messages, setMessages] = useState([
@@ -78,31 +68,31 @@ const ChatBotScreen = ({ navigation }) => {
 
   const renderMessage = ({ item }) => (
     <View style={[
-      styles.messageContainer,
-      item.isBot ? styles.botMessage : styles.userMessage
+      chatBotStyles.messageContainer,
+      item.isBot ? chatBotStyles.botMessage : chatBotStyles.userMessage
     ]}>
       {item.isBot && (
-        <View style={styles.botAvatar}>
+        <View style={chatBotStyles.botAvatar}>
           <Image 
             source={require('../../assets/bot-icon.png')} 
-            style={styles.botAvatarImage} 
+            style={chatBotStyles.botAvatarImage} 
             resizeMode="cover"
           />
         </View>
       )}
       <View style={[
-        styles.messageContent,
-        item.isBot ? styles.botMessageContent : styles.userMessageContent
+        chatBotStyles.messageContent,
+        item.isBot ? chatBotStyles.botMessageContent : chatBotStyles.userMessageContent
       ]}>
         <Text style={[
-          styles.messageText,
-          item.isBot ? styles.botMessageText : styles.userMessageText
+          chatBotStyles.messageText,
+          item.isBot ? chatBotStyles.botMessageText : chatBotStyles.userMessageText
         ]}>
           {item.text}
         </Text>
         <Text style={[
-          styles.timestamp,
-          item.isBot ? styles.botTimestamp : styles.userTimestamp
+          chatBotStyles.timestamp,
+          item.isBot ? chatBotStyles.botTimestamp : chatBotStyles.userTimestamp
         ]}>
           {item.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </Text>
@@ -111,58 +101,52 @@ const ChatBotScreen = ({ navigation }) => {
   );
 
   const renderTypingIndicator = () => (
-    <View style={[styles.messageContainer, styles.botMessage]}>
-      <View style={[styles.messageContent, styles.botMessageContent, styles.typingContainer]}>
-        <Text style={styles.typingText}>AstroBot is typing...</Text>
+    <View style={[chatBotStyles.messageContainer, chatBotStyles.botMessage]}>
+      <View style={[chatBotStyles.messageContent, chatBotStyles.botMessageContent, chatBotStyles.typingContainer]}>
+        <Text style={chatBotStyles.typingText}>AstroBot is typing...</Text>
       </View>
     </View>
   );
 
   return (
-    <KeyboardAvoidingView 
-      style={globalStyles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <LinearGradient
-        colors={["#FB9E3A", "#FBBF5D", "#FCEF91"]}
-        style={styles.header}
-      >
+    <View style={chatBotStyles.container}>
+      <View style={chatBotStyles.header}>
         <TouchableOpacity 
-          style={styles.backButton}
+          style={chatBotStyles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Text style={styles.backButtonText}>←</Text>
+          <Text style={chatBotStyles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <View style={styles.headerInfo}>
-          <View style={styles.titleRow}>
-            <Text style={styles.headerTitle}>Chat With Tejas</Text>
-            <View style={styles.creditsButton}>
-              <Text style={styles.creditsText}>⭐ 51</Text>
+        <View style={chatBotStyles.headerInfo}>
+          <View style={chatBotStyles.titleRow}>
+            <Text style={chatBotStyles.headerTitle}>Chat With Tejas</Text>
+            <View style={chatBotStyles.creditsButton}>
+              <Text style={chatBotStyles.creditsText}>⭐ 51</Text>
             </View>
-            <TouchableOpacity style={styles.buyCreditsButton}>
-              <Text style={styles.buyCreditsText}>+ Buy Credits</Text>
+            <TouchableOpacity style={chatBotStyles.buyCreditsButton}>
+              <Text style={chatBotStyles.buyCreditsText}>+ Buy Credits</Text>
             </TouchableOpacity>
           </View>
-          <View style={styles.onlineContainer}>
-            <View style={styles.onlineDot} />
-            <Text style={styles.onlineText}>Online</Text>
+          <View style={chatBotStyles.onlineContainer}>
+            <View style={chatBotStyles.onlineDot} />
+            <Text style={chatBotStyles.onlineText}>Online</Text>
           </View>
         </View>
-      </LinearGradient>
+      </View>
 
       <FlatList
         ref={flatListRef}
         data={messages}
         renderItem={renderMessage}
         keyExtractor={item => item.id}
-        style={styles.messagesList}
-        contentContainerStyle={styles.messagesContainer}
+        style={chatBotStyles.messagesList}
+        contentContainerStyle={chatBotStyles.messagesContainer}
         ListFooterComponent={isTyping ? renderTypingIndicator : null}
       />
 
-      <View style={styles.inputContainer}>
+      <View style={chatBotStyles.inputContainer}>
         <TextInput
-          style={styles.textInput}
+          style={chatBotStyles.textInput}
           value={inputText}
           onChangeText={setInputText}
           placeholder="Ask Tejas about your birth chart ."
@@ -171,203 +155,15 @@ const ChatBotScreen = ({ navigation }) => {
           maxLength={500}
         />
         <TouchableOpacity 
-          style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]}
+          style={[chatBotStyles.sendButton, !inputText.trim() && chatBotStyles.sendButtonDisabled]}
           onPress={sendMessage}
           disabled={!inputText.trim() || isTyping}
         >
-          <Text style={styles.sendButtonText}>Send</Text>
+          <Text style={chatBotStyles.sendButtonText}>Send</Text>
         </TouchableOpacity>
       </View>
-    </KeyboardAvoidingView>
+    </View>
   );
 };
-
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 50,
-    paddingBottom: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.lightGray,
-  },
-  backButton: {
-    padding: 5,
-  },
-  backButtonText: {
-    fontSize: 24,
-    color: colors.primary,
-  },
-  headerInfo: {
-    flex: 1,
-    marginLeft: 15,
-    marginRight: 5,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-    flexWrap: 'nowrap',
-    justifyContent: 'flex-start',
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.text,
-    marginRight: 8,
-    flexShrink: 1,
-    maxWidth: '35%',
-  },
-  onlineContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  onlineDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#2ECC71',
-    marginRight: 5,
-  },
-  onlineText: {
-    fontSize: 14,
-    color: colors.gray,
-  },
-  creditsButton: {
-    backgroundColor: '#4D1E00',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginRight: 3,
-    flexShrink: 0,
-  },
-  creditsText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-    fontSize: 13,
-  },
-  buyCreditsButton: {
-    backgroundColor: '#4D1E00',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    flexShrink: 0,
-  },
-  buyCreditsText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-    fontSize: 12,
-    textAlign: 'center',
-  },
-  messagesList: {
-    flex: 1,
-    backgroundColor: colors.white,
-  },
-  messagesContainer: {
-    paddingVertical: 20,
-  },
-  messageContainer: {
-    flexDirection: 'row',
-    marginBottom: 15,
-    paddingHorizontal: 20,
-  },
-  botMessage: {
-    justifyContent: 'flex-start',
-  },
-  userMessage: {
-    justifyContent: 'flex-end',
-  },
-  botAvatar: {
-    width: 35,
-    height: 35,
-    borderRadius: 17.5,
-    marginRight: 10,
-    overflow: 'hidden',
-  },
-  botAvatarImage: {
-    width: '100%',
-    height: '100%',
-  },
-  messageContent: {
-    backgroundColor: '#fB9E3A',
-    maxWidth: '75%',
-    borderRadius: 15,
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-  },
-  botMessageContent: {
-    backgroundColor: '#FEE2AD',
-    borderBottomLeftRadius: 5,
-  },
-  userMessageContent: {
-    backgroundColor: '#F5FOCD',
-    borderBottomRightRadius: 5,
-    marginLeft: 'auto',
-  },
-  messageText: {
-    fontSize: 16,
-    lineHeight: 20,
-  },
-  botMessageText: {
-    color: colors.text,
-  },
-  userMessageText: {
-    color: colors.white,
-  },
-  timestamp: {
-    fontSize: 12,
-    marginTop: 5,
-  },
-  botTimestamp: {
-    color: colors.gray,
-  },
-  userTimestamp: {
-    color: colors.white,
-    opacity: 0.8,
-    textAlign: 'right',
-  },
-  typingContainer: {
-    backgroundColor: colors.lightGray,
-  },
-  typingText: {
-    color: colors.gray,
-    fontStyle: 'italic',
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: colors.white,
-    borderTopWidth: 1,
-    borderTopColor: colors.lightGray,
-  },
-  textInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: colors.lightGray,
-    borderRadius: 20,
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    marginRight: 10,
-    maxHeight: 100,
-    fontSize: 16,
-    color: colors.text,
-  },
-  sendButton: {
-    backgroundColor: colors.primary,
-    borderRadius: 20,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-  },
-  sendButtonDisabled: {
-    backgroundColor: colors.gray,
-  },
-  sendButtonText: {
-    color: colors.white,
-    fontWeight: '600',
-  },
-});
 
 export default ChatBotScreen;
